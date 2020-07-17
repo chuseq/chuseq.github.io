@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+	<link rel="stylesheet" href="//cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <script src="js/d3.min.js"></script>
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar-navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid-nav text-center">
+            <img src="img/logo-v.png" alt="" class="logo">
+        </div>
+    </div>
+    <!-- /navbar -->
+    
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Herramientas de Visualización</h1>
+		<small><a href="index.html">Índice</a></small>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- bio -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <img src="img/img_400x400.jpg" alt="" class="avatar rounded-circle">
+                    <br>
+                    <h3>Alfredo Hernández</h3>
+    
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita ex vitae modi impedit consequuntur. Porro, quis? Maxime, libero laborum delectus repellat eaque tempora hic dolore, corrupti quo, quidem fugit eius!</p>
+    
+                </div>
+    
+            </div>
+            <!-- proyectos -->
+            <div class="col-md-9">
+                <H3>Conexiones VPN</H3>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis eum maxime fugiat quidem, ratione nostrum excepturi iste sequi temporibus quasi quis ipsam error autem animi sunt rem culpa blanditiis similique!</p>                    
+    
+                <div class="grafica mb-4 shadow">
+                </div>
+                <div id="tabla">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+<script>
+	// d3 content here
+
+datos=[]
+function load() {
+	//http://132.248.220.117/owncloud/index.php/s/kgxanZQNErH3CCj
+	//d3.csv('http://132.248.220.117/owncloud/index.php/s/kgxanZQNErH3CCj')
+	d3.csv('/unir3/connections.csv' //, function(d) { 
+ //		return {
+ //			fecha: d.fecha,
+ //			hora: d.hora,
+ //			usuario: d.usuario
+ //		}
+ //	}
+	).then(function(data) {
+		datos=data
+		grafica(data)
+	//	tabla(data)
+	})
+}
+function grafica(data) {
+	var countByUser = data.reduce(function(g,d) {
+		if(g[d.usuario]==undefined) { g[d.usuario]=1 }
+		else { g[d.usuario]++ }
+		return g
+	}, {})
+	countByUserSorted=Object.keys(countByUser).sort(function(a,b) { if(countByUser[a]>countByUser[b]){return 1}else if(countByUser[a]<countByUser[b]){return -1 }else{return 0}}).slice(0,10)
+	
+	console.log(countByUserSorted)
+
+}
+function tabla(data) {
+	var tabla=d3.select("#tabla").append("table").attr("id","tdatos")
+	var thead=tabla.append("thead").append("tr")
+	thead.selectAll("th").data(["fecha","hora","usuario"]).enter().append("th").text(function(d){ return d })
+	var tbody=tabla.append("tbody")
+	trows=tbody.selectAll("tr").data(data).enter().append("tr")
+	tcells=trows.selectAll("td").data(function(d) {return Object.values(d)}).enter().append("td").text(function(d){ return d })
+	console.log("table loaded")
+	$(document).ready(function() {
+		$('#tdatos').DataTable()
+	} );
+}
+
+load()
+
+</script>
+
+        
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+
+	<script src="//cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+</body>
+</html>
