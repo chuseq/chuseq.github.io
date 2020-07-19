@@ -63,6 +63,8 @@ function load() {
 	d3.csv('/unir3/connections.csv').then(function(data) {
 		datos=data
 		graphByUser(data)
+		graphByDate(data)
+		graphByHour(data)
 		tableAll(data)
 	})
 }
@@ -91,29 +93,163 @@ function graphByUser(data) {
 		.append('div').attr('class', 'hbar mt-2')
 //		.merge(graficaByUserDiv)
 		.style('width', function(d){return (d.num/10)+'px'})
-		.text(function(d){return d.num})
+		.text(function(d){return d.usuario+'/'+d.num})
 //	graficaByUserDiv.selectAll('div.hbar')
 //		.data(datosByUser)
 //		.exit()
 //		.remove()
 	console.log('graph by user ready')
 }
+
+function graphByDate(data) {
+	//select count(*) as num from data group by usuario
+	countByDate = data.reduce(function(g,d) {
+		if(g[d.fecha]==undefined) { g[d.fecha]=1 }
+		else { g[d.fecha]++ }
+		return g
+	}, {})
+//	console.log(countByDate)
+	// order by num desc limit 10
+	countByDateArray=[]
+	Object.keys(countByDate)
+		.forEach(function(e){t={};t["fecha"]=e;t["num"]=countByDate[e];countByDateArray.push(t)})
+	datosByDate=countByDateArray
+	// graph
+	d3.select('body').select('#graficas').append('hr')
+	d3.select('body').select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaD').style('height','400px')
+	d3.select('#graficaD').append('h4').text('Conexiones por fecha')
+	var div=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
+
+	graficaByDateDiv=d3.select('#graficaD')
+		.selectAll('div.vbar')
+		.data(datosByDate)
+	graficaByDateDiv.enter()
+		.append('div').attr('class', 'vbar')
+		.style('height', function(d){return (d.num/3.2)+'px'})
+		.style('width', '4.8px')
+	        .on("mouseover", function(d) {
+				d3.select(this).style("background-color", "blue")
+				div.transition().duration(200).style("opacity", .8)
+				div.html(d.fecha+'<br/>'+d.num).style('left', (d3.event.pageX)+'px').style('top', (d3.event.pageY)+'px')
+				})
+		.on("mouseout", function(d) {
+				d3.select(this).style("background-color", "#44a")
+				div.transition().duration(500).style("opacity", 0)
+				})
+	console.log('graph by date ready')
+}
+// <rect x="100" y="0" width="200" height="50"/>
+function graphByHour(data) {
+	//select count(*) as num from data group by usuario
+	countByHour = data.reduce(function(g,d) {
+		hod=d.hora.split(':')[0]
+		if(g[hod]==undefined) { g[hod]=1 }
+		else { g[hod]++ }
+		return g
+	}, {})
+//	console.log(countByHour)
+	// order by num desc limit 10
+	countByHourArray=[]
+	Object.keys(countByHour)
+		.sort(function(a,b){return a-b})
+		.forEach(function(e){t={};t["hora"]=e;t["num"]=countByHour[e];countByHourArray.push(t)})
+	datosByHour=countByHourArray
+//	console.log(countByHourArray)
+	// graph
+	d3.select('#graficas').append('hr')
+	d3.select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaH').style('height','520px')
+	d3.select('#graficaH').append('h4').text('Conexiones por hora de día')
+	var div=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
+	var wi=760
+	var he=420
+	//debemos encontrar maximo para normalizar
+	var numax=d3.max(datosByHour, function(d){return d.num})
+	var escala=Math.ceil(numax/he)
+	var escalaY=d3.scaleLinear()
+		.domain([0, d3.max(datosByHour, function(d) { return d.num; })])
+		.range([420,0]);
+	var ejeY = d3.axisLeft(escalaY)
+	graficaByHourSVG=d3.select('#graficaH').append('svg').attr('width',wi+40).attr('height',he+40)
+		.append('g')
+		.attr('transform', 'translate(40,0)') 
+
+	graficaByHourSVG.selectAll('rect')
+		.data(datosByHour)
+		.enter()
+		.append('rect')
+		.attr('x', function(d,i){ return i*(wi/datosByHour.length)})
+		.attr('y', function(d,i){ return he-(d.num/escala) })
+		.attr('width', wi/datosByHour.length-1)
+		.attr('height', function(d){return d.num/escala})
+		.attr('fill','#44a')
+	        .on("mouseover", function(d) {
+				d3.select(this).style("fill", "blue");
+				div.transition().duration(200).style("opacity", .8)
+				div.html(d.hora+':00'+'<br/>'+d.num).style('left', (d3.event.pageX)+'px').style('top', (d3.event.pageY)+'px')
+				})
+		.on("mouseout", function(d) {
+				d3.select(this).style("fill", "#44a")
+				div.transition().duration(500).style("opacity", 0)
+				})
+	var groupHour= graficaByHourSVG.selectAll('text')
+		.data(datosByHour)
+	var enterHour=groupHour
+		.enter()
+	enterHour.append('text')
+		.text(function(d) {return d.num})
+		.attr('x', function(d,i){ return i*(wi/datosByHour.length)+2})
+		.attr('y', function(d,i){ return he-(d.num/8)-2 })
+		.style('font-size','10px')
+	enterHour.append('text')
+		.text(function(d) {return d.hora})
+		.attr('x', function(d,i){ return i*(wi/datosByHour.length)+8})
+		.attr('y', function(d,i){ return he+20 })
+		.style('font-size','10px')
+	groupHour=groupHour.merge(enterHour)
+	graficaByHourSVG
+		.append('g')
+	//	.attr('transform', 'translate(10,0)') 
+		.call(ejeY) 
+	console.log('graph by hour ready')
+}
+
+
+
+
 function tableAll(data) {
-	d3.select('body').select('#tabla').append('h4').text('Tabla de datos')
-	d3.select('#tabla').append('p').attr('id','loading').text('Cargando...')
-	$(document).ready(function() {
+	var tablaDiv=d3.select('#tabla')
+	tablaDiv.append('h4').text('Tabla de datos')
+	tablaDiv.append('button')
+		.attr('class','btn btn-outline-primary')	
+		.attr('id','btnTableAll')
+		.text('Cargar datos')
+
+	d3.select('#btnTableAll')
+		.on('click', function(){
+			//tablaDiv.append('p').text('Cargando...')
+			d3.select(this).text('Cargando...').attr('class','btn btn-outline-danger').attr('disabled','true');
+			tableLoad(data)
+			d3.select(this).text('Datos cargados').attr('class','btn btn-outline-success')
+
+		} )
+}
+function tableLoad(data) {
+	//$(document).ready(function(){
+	console.log("table loading...")
 	var tabla=d3.select("#tabla").append("table").attr("id","tdatos")
 	var thead=tabla.append("thead").append("tr")
 	thead.selectAll("th").data(["fecha","hora","usuario"]).enter().append("th").text(function(d){ return d })
 	var tbody=tabla.append("tbody")
 	trows=tbody.selectAll("tr").data(data).enter().append("tr")
 	tcells=trows.selectAll("td").data(function(d) {return Object.values(d)}).enter().append("td").text(function(d){ return d })
+	//datatables magic
+	$('#tdatos').DataTable()
+	//d3.select(this).text('Cargar datos')
 	console.log("table loaded")
-		$('#tdatos').DataTable()
-		d3.select('#loading').remove()
-	} );
-}
+	//})
+	//d3.select(this).remove()
 
+}
 load()
 
 
