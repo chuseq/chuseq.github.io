@@ -41,9 +41,9 @@
             </div>
             <!-- proyectos -->
             <div class="col-md-9">
-                <H3>Tarea 2: Gráficos con D3</H3>
+                <H3>Tarea 2: Gráficos con D3 (I)</H3>
                 <p>
-		Se usó el mismo conjunto de datos de conexiones VPN por fecha, hora y usuario.
+		Se usó el mismo conjunto de datos de conexiones VPN por fecha, hora y usuario (que en la tarea 1 - conexiones-vpn.html). Solamente se tomaron los datos de 2020.
 		</p>
 
                 <div id="graficas" class="graficas mb-4 shadow">
@@ -94,6 +94,9 @@ function graphByUser(data) {
 	graficaByUserDiv.enter()
 		.append('div').attr('class', 'hbar mt-2')
 //		.merge(graficaByUserDiv)
+		.transition()
+		.delay(10)
+		.duration(2000)
 		.style('width', function(d){return (d.num/10)+'px'})
 		.text(function(d){return d.usuario+'/'+d.num})
 //	graficaByUserDiv.selectAll('div.hbar')
@@ -127,8 +130,11 @@ function graphByDate(data) {
 		.data(datosByDate)
 	graficaByDateDiv.enter()
 		.append('div').attr('class', 'vbar')
+		.style('width', '4px')
+//		.transition()
+//		.delay(10)
+//		.duration(2000)
 		.style('height', function(d){return (d.num/3.2)+'px'})
-		.style('width', '4.8px')
 	        .on("mouseover", function(d) {
 				d3.select(this).style("background-color", "blue")
 				div.transition().duration(200).style("opacity", .8)
@@ -182,7 +188,6 @@ function graphByHour(data) {
 		.attr('x', function(d,i){ return i*(wi/datosByHour.length)})
 		.attr('y', function(d,i){ return he-(d.num/escala) })
 		.attr('width', wi/datosByHour.length-1)
-		.attr('height', function(d){return d.num/escala})
 		.attr('fill','#44a')
 	        .on("mouseover", function(d) {
 				d3.select(this).style("fill", "blue");
@@ -193,6 +198,10 @@ function graphByHour(data) {
 				d3.select(this).style("fill", "#44a")
 				div.transition().duration(500).style("opacity", 0)
 				})
+		.transition()
+		.delay(10)
+		.duration(2000)
+		.attr('height', function(d){return d.num/escala})
 	var groupHour= graficaByHourSVG.selectAll('text')
 		.data(datosByHour)
 	var enterHour=groupHour

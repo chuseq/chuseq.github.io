@@ -14,7 +14,7 @@ body { font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Luc
 
 .hbar { 
 	height: 27px; 
-	width: 71px;
+	width: 60px;
 	color: #ccf;
 	background-color: #44a; 
 	text-align:right; 
@@ -23,8 +23,8 @@ body { font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Luc
 
 .vbar {
 	display: inline-block;
-	width: 20px;
-	height: 75px; 
+	width: 10px;
+	height: 50px; 
 	background-color: #44a;
 }
 
