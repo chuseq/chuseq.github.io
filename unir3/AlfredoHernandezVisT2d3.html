@@ -43,11 +43,14 @@
             <div class="col-md-9">
                 <H3>Conexiones VPN</H3>
                 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis eum maxime fugiat quidem, ratione nostrum excepturi iste sequi temporibus quasi quis ipsam error autem animi sunt rem culpa blanditiis similique!</p>                    
-    
-                <div class="grafica mb-4 shadow">
+
+                <div id="graficas" class="graficas mb-4 shadow">
+
                 </div>
                 <div id="tabla">
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -57,33 +60,48 @@
 
 datos=[]
 function load() {
-	//http://132.248.220.117/owncloud/index.php/s/kgxanZQNErH3CCj
-	//d3.csv('http://132.248.220.117/owncloud/index.php/s/kgxanZQNErH3CCj')
-	d3.csv('/unir3/connections.csv' //, function(d) { 
- //		return {
- //			fecha: d.fecha,
- //			hora: d.hora,
- //			usuario: d.usuario
- //		}
- //	}
-	).then(function(data) {
+	d3.csv('/unir3/connections.csv').then(function(data) {
 		datos=data
-		grafica(data)
-	//	tabla(data)
+		graphByUser(data)
+		tableAll(data)
 	})
 }
-function grafica(data) {
-	var countByUser = data.reduce(function(g,d) {
+
+function graphByUser(data) {
+	//select count(*) as num from data group by usuario
+	countByUser = data.reduce(function(g,d) {
 		if(g[d.usuario]==undefined) { g[d.usuario]=1 }
 		else { g[d.usuario]++ }
 		return g
 	}, {})
-	countByUserSorted=Object.keys(countByUser).sort(function(a,b) { if(countByUser[a]>countByUser[b]){return 1}else if(countByUser[a]<countByUser[b]){return -1 }else{return 0}}).slice(0,10)
-	
-	console.log(countByUserSorted)
-
+	// order by num desc limit 10
+	countByUserSortedArray=[]
+	userSorted=Object.keys(countByUser)
+		.sort(function(a,b) { if(countByUser[a]<countByUser[b]){return 1}else if(countByUser[a]>countByUser[b]){return -1 }else{return 0}})
+		.slice(0,10)
+		.forEach(function(e){t={};t["usuario"]=e;t["num"]=countByUser[e];countByUserSortedArray.push(t)})
+	datosByUser=countByUserSortedArray
+	// graph
+	d3.select('body').select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaU')
+	d3.select('#graficaU').append('h4').text('Top Usuarios con más conexiones')
+	graficaByUserDiv=d3.select('#graficaU')
+		.selectAll('div.hbar')
+		.data(datosByUser)
+	graficaByUserDiv.enter()
+		.append('div').attr('class', 'hbar mt-2')
+//		.merge(graficaByUserDiv)
+		.style('width', function(d){return (d.num/10)+'px'})
+		.text(function(d){return d.num})
+//	graficaByUserDiv.selectAll('div.hbar')
+//		.data(datosByUser)
+//		.exit()
+//		.remove()
+	console.log('graph by user ready')
 }
-function tabla(data) {
+function tableAll(data) {
+	d3.select('body').select('#tabla').append('h4').text('Tabla de datos')
+	d3.select('#tabla').append('p').attr('id','loading').text('Cargando...')
+	$(document).ready(function() {
 	var tabla=d3.select("#tabla").append("table").attr("id","tdatos")
 	var thead=tabla.append("thead").append("tr")
 	thead.selectAll("th").data(["fecha","hora","usuario"]).enter().append("th").text(function(d){ return d })
@@ -91,12 +109,13 @@ function tabla(data) {
 	trows=tbody.selectAll("tr").data(data).enter().append("tr")
 	tcells=trows.selectAll("td").data(function(d) {return Object.values(d)}).enter().append("td").text(function(d){ return d })
 	console.log("table loaded")
-	$(document).ready(function() {
 		$('#tdatos').DataTable()
+		d3.select('#loading').remove()
 	} );
 }
 
 load()
+
 
 </script>
 
@@ -107,6 +126,13 @@ load()
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
 
 	<script src="//cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+	<br />
+
+    <p style="text-align:center;width:100%">
+    <small>Alfredo José Hernández Alvarez - ahernand@gmail.com - Tarea 2 - Herramientas de Visualización - Maestría en Análisis y Visualización de Datos Masivos UNIR</sm
+all>
+    </p>
 
 </body>
 </html>
