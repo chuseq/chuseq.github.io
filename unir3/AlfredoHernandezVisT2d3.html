@@ -87,7 +87,7 @@ function graphByUser(data) {
 	datosByUser=countByUserSortedArray
 	// graph
 	d3.select('body').select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaU')
-	d3.select('#graficaU').append('h4').text('Top Usuarios con más conexiones')
+	d3.select('#graficaU').append('h4').text('Top 10 usuarios con más conexiones (usuario/#conexiones)')
 	graficaByUserDiv=d3.select('#graficaU')
 		.selectAll('div.hbar')
 		.data(datosByUser)
@@ -122,7 +122,8 @@ function graphByDate(data) {
 	// graph
 	d3.select('body').select('#graficas').append('hr')
 	d3.select('body').select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaD').style('height','400px')
-	d3.select('#graficaD').append('h4').text('Conexiones por fecha')
+	d3.select('#graficaD').append('h4').text('Conexiones por fecha (2020)')
+	d3.select('#graficaD').append('p').text('Al colocar el mouse sobre una barra se muestran los datos')
 	var div=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
 
 	graficaByDateDiv=d3.select('#graficaD')
@@ -134,7 +135,7 @@ function graphByDate(data) {
 //		.transition()
 //		.delay(10)
 //		.duration(2000)
-		.style('height', function(d){return (d.num/3.2)+'px'})
+		.style('height', function(d){return (d.num/3.6)+'px'})
 	        .on("mouseover", function(d) {
 				d3.select(this).style("background-color", "blue")
 				div.transition().duration(200).style("opacity", .8)
@@ -165,8 +166,9 @@ function graphByHour(data) {
 //	console.log(countByHourArray)
 	// graph
 	d3.select('#graficas').append('hr')
-	d3.select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaH').style('height','520px')
-	d3.select('#graficaH').append('h4').text('Conexiones por hora de día')
+	d3.select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaH').style('height','540px')
+	d3.select('#graficaH').append('h4').text('Conexiones por hora de día (acumulado 2020)')
+	d3.select('#graficaH').append('p').text('Al colocar el mouse sobre una barra se muestran los datos')
 	var div=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
 	var wi=760
 	var he=420
@@ -230,6 +232,7 @@ function graphByHour(data) {
 function tableAll(data) {
 	var tablaDiv=d3.select('#tabla')
 	tablaDiv.append('h4').text('Tabla de datos')
+	tablaDiv.append('p').text('Al hacer click se cargan los datos en una tabla (esperar un poco)')
 	tablaDiv.append('button')
 		.attr('class','btn btn-outline-primary')	
 		.attr('id','btnTableAll')
