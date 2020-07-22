@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+	<link rel="stylesheet" href="../css/styles.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="../js/d3.min.js"></script>
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar-navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid-nav text-center">
+            <img src="../img/logo-v.png" alt="" class="logo">
+        </div>
+    </div>
+    <!-- /navbar -->
+    
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Herramientas de Visualización</h1>
+		<small><a href="../index.html">Índice</a></small>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- bio -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <img src="../img/img_400x400.jpg" alt="" class="avatar rounded-circle">
+                    <br>
+                    <h3>Alfredo Hernández</h3>
+    
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita ex vitae modi impedit consequuntur. Porro, quis? Maxime, libero laborum delectus repellat eaque tempora hic dolore, corrupti quo, quidem fugit eius!</p>
+    
+                </div>
+    
+            </div>
+            <!-- proyectos -->
+            <div class="col-md-9">
+		    <!-- poner aqui los botones -->
+		<div>
+			<button class="btn btn-outline-primary" onClick="selecciona('América')">América</button>
+			<button class="btn btn-outline-primary" onClick="selecciona('Asia')">Asia</button>
+			<button class="btn btn-outline-primary" onClick="selecciona('Este Europeo')">Este Europeo</button>
+			<button class="btn btn-outline-primary" onClick="selecciona('Golfo Pérsico')">Golfo Pérsico</button>
+			<button class="btn btn-outline-danger"  onClick="selecciona('Todos')">Todos</button>
+		</div>
+		<div>
+			<button class="btn btn-outline-success" onClick="ordena('nombre')">Por nombre</button>
+			<button class="btn btn-outline-danger" onClick="ordena('altura')">Por altura</button>
+		</div>
+
+                <div id="grafica" class="grafica mb-4 shadow">
+
+                </div>
+                <H3>CSV</H3>
+                <p>
+		Usaremos un archivo CSV como origen de datos
+		</p>
+    
+            </div>
+        </div>
+    </div>
+    
+<script>
+// d3 content here
+
+//colores={'América':'#ff0000',
+//	'Asia':'#00ff00',
+//	'Este Europeo':'#0000ff',
+//	'Golfo Pérsico':'#00ffff',
+//}
+colores=d3.scaleOrdinal()
+	.domain(['América','Asia','Este Europeo','Golfo Pérsico'])
+	.range(['#ff0000','#00ff00','#0000ff','#00ffff'])
+// si no existe el valor, hace una aproximacion
+
+y=d3.scaleLinear()
+ancho=+d3.select('#grafica').style('width').slice(0,-2)
+
+
+datos=[
+	{valor:10,color:'#ff0000'},
+	{valor:20,color:'#ffff00'},
+	{valor:50,color:'#ff00ff'},
+	{valor:40,color:'#0000ff'},
+	{valor:30,color:'#ff0000'},
+	{valor:10,color:'#00ffff'},
+	{valor:60,color:'#00ff00'}
+]
+datos=[]
+
+comparaPorNombre = function(a, b) {
+    return a.edificio > b.edificio ? 1 : -1
+}
+comparaPorTamano = function(a, b) {
+    return a.oficial < b.oficial ? 1 : -1
+}
+
+function load() {
+	// then() es una promise, es para procesos asincronos, toma el resultado de la funcion anterior y si es exitosa se ejecuta la funcion del primer parametro, si no, la del segundo parametro
+	//http://132.248.220.117/owncloud/index.php/s/kgxanZQNErH3CCj
+	//d3.csv('http://132.248.220.117/owncloud/index.php/s/kgxanZQNErH3CCj')
+	d3.csv('/unir3/csv/edificios.csv')
+	.then(function(data) { //console.log(data.edificio)
+		datos=data
+		ymax=d3.max(data, function(d){ return +d.oficial})
+		y.domain([0,ymax])
+		    .range([0,ancho])
+
+		console.log('altura maxima='+ymax)
+		render(data)
+	})
+}
+
+//funcion para manejar el despliegue de datos
+function render(data,comparador=null) {
+  hbars=d3.select('#grafica')
+	.selectAll('div.hbar')
+	.data(data)
+	// enter cicla en los elementos de data
+  hbars.enter()
+	.append('div').attr('class','hbar mb-2')
+	.merge(hbars)
+	.style('width',function(d) { return y(d.oficial)+'px' })
+	.style('background-color', function(d) { return colores(d.region) })
+	.text(function (d) { return d.edificio+' '+d.oficial })
+  if (comparador)
+      hbars.sort(comparador)
+  d3.selectAll('div.hbar')
+	.data(data)
+	.exit()
+	.remove()
+}
+
+function selecciona(region) {
+	d=datos.filter(function(d,i) { 
+		if(region=='Todos') { return true }
+		return region==d.region})
+	render(d)
+}
+
+function ordena(como) {
+    comparador = (como == 'nombre') ? comparaPorNombre : comparaPorTamano
+    render(datos, comparador)
+}
+
+//render(datos)
+load()
+
+</script>
+
+        
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+
+</body>
+</html>
