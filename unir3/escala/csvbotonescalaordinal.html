@@ -81,6 +81,8 @@ colores=d3.scaleOrdinal()
 y=d3.scaleLinear()
 ancho=+d3.select('#grafica').style('width').slice(0,-2)
 
+alto=+d3.select('#grafica').style('height').slice(0,-2)
+console.log('alto = '+alto)
 
 datos=[
 	{valor:10,color:'#ff0000'},
@@ -111,7 +113,7 @@ function load() {
 		y.domain([0,ymax])
 		    .range([0,ancho])
 
-		console.log('altura maxima='+ymax)
+//		console.log('altura maxima='+ymax)
 		render(data)
 	})
 }
@@ -125,15 +127,19 @@ function render(data,comparador=null) {
   hbars.enter()
 	.append('div').attr('class','hbar mb-2')
 	.merge(hbars)
-	.style('width',function(d) { return y(d.oficial)+'px' })
+	.style('height',function(d) { return alto/data.length+'px' })
 	.style('background-color', function(d) { return colores(d.region) })
 	.text(function (d) { return d.edificio+' '+d.oficial })
+	.transition()
+	.style('width',function(d) { return y(d.oficial)+'px' })
   if (comparador)
       hbars.sort(comparador)
   d3.selectAll('div.hbar')
 	.data(data)
 	.exit()
 	.remove()
+
+  d3.select('#grafica').style('height',function(d){ return 31*data.length})
 }
 
 function selecciona(region) {
