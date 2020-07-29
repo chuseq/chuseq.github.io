@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+	<link rel="stylesheet" href="../css/styles.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="../js/d3.min.js"></script>
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar-navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid-nav text-center">
+            <img src="../img/logo-v.png" alt="" class="logo">
+        </div>
+    </div>
+    <!-- /navbar -->
+    
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Herramientas de Visualización</h1>
+		<small><a href="../index.html">Índice</a></small>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- bio -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <img src="../img/img_400x400.jpg" alt="" class="avatar rounded-circle">
+                    <br>
+                    <h3>Alfredo Hernández</h3>
+    
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita ex vitae modi impedit consequuntur. Porro, quis? Maxime, libero laborum delectus repellat eaque tempora hic dolore, corrupti quo, quidem fugit eius!</p>
+    
+                </div>
+    
+            </div>
+            <!-- proyectos -->
+            <div class="col-md-9">
+                <div id="grafica" class="grafica mb-4 shadow">
+
+			<!-- SVG con D3 -->
+
+                </div>
+		<button class="btn btn-outline-danger" onclick="mover()">Click</button>
+
+                <H3>Título</H3>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis eum maxime fugiat quidem, ratione nostrum excepturi iste sequi temporibus quasi quis ipsam error autem animi sunt rem culpa blanditiis similique!</p>                    
+    
+            </div>
+        </div>
+    </div>
+    
+<script>
+// d3 content here
+ancho=d3.select('#grafica').style('width').slice(0,-2)
+alto=ancho*9/16
+svg=d3.select('#grafica')
+	.append('svg')
+	.attr('width',ancho)
+	.attr('height',alto)
+
+circle=svg.append('circle')
+	.attr('cx',ancho/2)
+	.attr('cy',alto/2)
+	.attr('r',50)
+	.attr('fill','red')
+
+seed=42
+//pseudo random
+function random() {
+	x=Math.sin(seed++)*10000
+	return x-Math.floor(x)
+}
+function mover() {
+	circle
+		.transition()
+		.attr('cx',Math.floor(random()*ancho))
+		.attr('cy',Math.floor(random()*alto))
+		.attr('r',random()*100)
+
+}
+
+
+
+
+</script>
+
+        
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+
+</body>
+</html>
