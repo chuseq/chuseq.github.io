@@ -149,7 +149,10 @@ function graphBy(tipo) {
 	d3.select('#graficaGenomic').append('p').text('Al colocar el mouse sobre un punto se muestran los datos')
 	var svgancho=ancho-margin.left-margin.right-40
 	var svgalto=svgancho*9/16-margin.top-margin.bottom-40
-
+	var rad=5
+	var lineWidth=2.5
+	if(svgancho<480) { rad=1.5; lineWidth=1 }
+	console.log('svgancho='+svgancho+' svgalto='+svgalto+' rad='+rad)
         countBy = datos.reduce(function(g,d) {
 		if(g[d[tipo]]==undefined) { g[d[tipo]]=1 }
                 else { g[d[tipo]]++ }
@@ -209,7 +212,7 @@ function graphBy(tipo) {
                                 d3.select(this).style('background-color',colores['gc']).style("opacity", 1)
                                 tooltip.transition().duration(500).style("opacity", 0)
                                 })
-		.attr('r',5)
+		.attr('r',rad)
 		.attr('cx',function(d){return x(d[tipo])})
 		.attr('cy',function(d){return y(d.num)})
 		.attr('fill',function(d){return colores[tipo]})
@@ -221,7 +224,7 @@ function graphBy(tipo) {
 		.datum(datosBy)
 		.attr('fill','none')
 		.attr('stroke',colores[tipo])
-		.attr('stroke-width',2.5)
+		.attr('stroke-width',lineWidth)
 		.attr('d', lines)
 	var lineLength=path.node().getTotalLength()
 	path.attr('stroke-dasharray',lineLength+' '+lineLength)
