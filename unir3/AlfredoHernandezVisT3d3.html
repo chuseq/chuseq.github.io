@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+	<link rel="stylesheet" href="//cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <script src="js/d3.min.js"></script>
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar-navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid-nav text-center">
+            <img src="img/logo-v.png" alt="" class="logo">
+        </div>
+    </div>
+    <!-- /navbar -->
+    
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Herramientas de Visualización</h1>
+		<small><a href="index.html">Índice</a></small>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- bio -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <img src="img/img_400x400.jpg" alt="" class="avatar rounded-circle">
+                    <br>
+                    <h3>Alfredo Hernández</h3>
+    
+                    <p>Linux Sysadmin, Programmer, and interested in big biodata </p>
+    
+                </div>
+    
+            </div>
+            <!-- proyectos -->
+            <div class="col-md-9">
+                <H3>Tarea 3: Gráficos con D3 (II)</H3>
+                <p>
+		En esta tarea se usaron dos conjuntos de datos:
+		<ol>
+			<li>El clásico <a href="#iris">conjunto de datos IRIS</a> de las propiedades de tres tipos de plantas</li>
+			<li>El conjunto de datos con el que estoy trabajando en el TFM: <a href="AlfredoHernandezVisT3d3genomic.html">representaciones vectoriales de subsecuencias genómicas</a> de genomas mitocondriales</li>
+		</ol>
+		</p>
+
+		<H3><a name="iris">IRIS dataset</a></H3>
+                <div id="graficas" class="graficas mb-4 shadow">
+
+                </div>
+                <div id="tabla">
+
+                </div>
+
+		<br />
+		<hr>
+		<br />
+
+
+            </div>
+        </div>
+    </div>
+    
+<script>
+seed=42
+//pseudo random // taken from class
+function random() {
+        x=Math.abs(Math.sin(seed++))*10
+        return x//-Math.floor(x)
+}
+
+// d3 content here
+colores={'Iris-setosa':'#ff0000',
+        'Iris-versicolor':'#00ff00',
+        'Iris-virginica':'#0000ff'}
+var margin={top:20, right:20, bottom:30, left:40}
+ancho=+d3.select('#graficas').style('width').slice(0,-2)
+alto=ancho*9/16
+datos=[]
+// load
+function loadIris() {
+	d3.csv('/unir3/csv/iris.csv').then(function(data) {
+		data.forEach(function(d) {
+			d.sepalLength=+d.sepalLength
+			d.sepalWidth=+d.sepalWidth
+			d.petalLength=+d.petalLength
+			d.petalWidth=+d.petalWidth
+		})
+		datos=data
+		titleSepal(data)
+		d3.select('#graficas').append('br')
+		titlePetal(data)
+		titleTable(data)
+	})
+}
+// sepal length vs sepal width
+function titleSepal(data) {
+	var titlealto=120
+	var altoactual=+d3.select('#graficas').style('height').slice(0,-2)
+	d3.select('#graficas').style('height',altoactual+titlealto+'px')
+        d3.select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaSepal').style('height',titlealto+'px')
+        d3.select('#graficaSepal').append('h4').text('Sepal Length vs Sepal Width')
+
+	d3.select('#graficaSepal').append('button')
+		.attr('class','btn btn-outline-primary')	
+		.attr('id','btnGraphSepal')
+		.text('Mostrar gráfica')
+	d3.select('#btnGraphSepal')
+		.on('click', function(){
+			d3.select(this).text('Cargando...').attr('class','btn btn-outline-danger')
+			graphSepal(data)
+			d3.select(this).text('Gráfica lista.').attr('class','btn btn-outline-success').attr('disabled','true')
+		})
+}
+function graphSepal(data) {
+	var altoactual=+d3.select('#graficas').style('height').slice(0,-2)
+	d3.select('#graficas').style('height',altoactual+alto+'px')
+	var altograf=+d3.select('#graficaSepal').style('height').slice(0,-2)
+	d3.select('#graficaSepal').style('height',altograf+alto+'px')
+	d3.select('#graficaSepal').append('p').text('Al colocar el mouse sobre un punto se muestran los datos')
+	var svgancho=ancho-margin.left-margin.right-40
+	var svgalto=svgancho*9/16-margin.top-margin.bottom-40
+	console.log('Ancho='+ancho+' Alto='+alto)
+	console.log('SvgAncho='+svgancho+' SvgAlto='+svgalto)
+	var x=d3.scaleLinear()
+		.range([0,svgancho])
+        	.domain([
+			d3.min(data,function(d){return d.sepalLength}),
+			d3.max(data,function(d){return d.sepalLength})
+        	])
+	var y=d3.scaleLinear()
+		.range([0,svgalto])
+        	.domain([
+                	d3.max(data,function(d){return d.sepalWidth}),
+                	d3.min(data,function(d){return d.sepalWidth})
+        	])
+	var tooltip=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
+	// graph
+	//d3.select('#svgsepal').remove()
+	svg=d3.select('#graficaSepal')
+	        .append('svg')
+	        .attr('id','svgsepal')
+	        .attr('width',ancho)
+	        .attr('height',alto)
+		.append('g')
+		.attr('transform','translate('+margin.left+','+margin.top+')')
+        circles=svg.selectAll('circle').data(data)
+        circles.enter()
+                .append('circle')
+	        .on("mouseover", function(d) {
+				d3.select(this).style("opacity", .5)
+				tooltip.transition().duration(200).style("opacity", .8)
+			tooltip.html(d.class+'<br>'+d.sepalLength+','+d.sepalWidth).style('left', (d3.event.pageX)+'px').style('top', (d3.event.pageY)+'px')
+				})
+		.on("mouseout", function(d) {
+				d3.select(this).style("opacity", 1)
+				tooltip.transition().duration(500).style("opacity", 0)
+				})
+                .attr('cx',function(d){return x(random())})
+                .attr('cy',function(d){return y(random())})
+                .attr('fill','gray')
+                .attr('r', '1')
+		.style('opacity',0.3)
+		.transition()
+		.duration(3000)
+		//.delay(10)
+                .attr('cx',function(d){return x(d.sepalLength)})
+                .attr('cy',function(d){return y(d.sepalWidth)})
+                .attr('r', '8')
+		.style('opacity',1)
+                .attr('fill',function(d){return colores[d.class]})
+	svg
+		.append('g')
+		.attr('transform','translate(0,'+svgalto+')')
+		.call(d3.axisBottom(x))
+	svg
+		.append('g')
+		.call(d3.axisLeft(y))
+	console.log('graph sepal ready')
+}
+
+//petalLength vs petalWidth
+function titlePetal(data) {
+	var titlealto=120
+	var altoactual=+d3.select('#graficas').style('height').slice(0,-2)
+	d3.select('#graficas').style('height',altoactual+titlealto+'px')
+        d3.select('#graficas').append('div').attr('class','grafica rounded-lg').attr('id','graficaPetal').style('height',titlealto+'px')
+        d3.select('#graficaPetal').append('h4').text('Petal Length vs Petal Width')
+
+	d3.select('#graficaPetal').append('button')
+		.attr('class','btn btn-outline-primary')	
+		.attr('id','btnGraphPetal')
+		.text('Mostrar gráfica')
+	d3.select('#btnGraphPetal')
+		.on('click', function(){
+			d3.select(this).text('Cargando...').attr('class','btn btn-outline-danger')
+			graphPetal(data)
+			d3.select(this).text('Gráfica lista').attr('class','btn btn-outline-success').attr('disabled','true')
+		})
+}
+function graphPetal(data) {
+
+	var altoactual=+d3.select('#graficas').style('height').slice(0,-2)
+	d3.select('#graficas').style('height',altoactual+alto+'px')
+	var altograf=+d3.select('#graficaPetal').style('height').slice(0,-2)
+	d3.select('#graficaPetal').style('height',altograf+alto+'px')
+	d3.select('#graficaPetal').append('p').text('Al colocar el mouse sobre un punto se muestran los datos')
+	var svgancho=ancho-margin.left-margin.right-40
+	var svgalto=svgancho*9/16-margin.top-margin.bottom-40
+	console.log('Ancho='+ancho+' Alto='+alto)
+	console.log('SvgAncho='+svgancho+' SvgAlto='+svgalto)
+	var x=d3.scaleLinear()
+		.range([0,svgancho])
+        	.domain([
+			d3.min(data,function(d){return d.petalLength}),
+			d3.max(data,function(d){return d.petalLength})
+        	])
+	var y=d3.scaleLinear()
+		.range([0,svgalto])
+        	.domain([
+                	d3.max(data,function(d){return d.petalWidth}),
+                	d3.min(data,function(d){return d.petalWidth})
+        	])
+	var tooltip=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
+	// graph
+	svg=d3.select('#graficaPetal')
+	        .append('svg')
+	        .attr('width',ancho)
+	        .attr('height',alto)
+		.append('g')
+		.attr('transform','translate('+margin.left+','+margin.top+')')
+        circles=svg.selectAll('circle').data(data)
+        circles.enter()
+                .append('circle')
+	        .on("mouseover", function(d) {
+				d3.select(this).style("opacity", .5)
+				tooltip.transition().duration(200).style("opacity", .8)
+			tooltip.html(d.class+'<br>'+d.petalLength+','+d.petalWidth).style('left', (d3.event.pageX)+'px').style('top', (d3.event.pageY)+'px')
+				})
+		.on("mouseout", function(d) {
+				d3.select(this).style("opacity", 1)
+				tooltip.transition().duration(500).style("opacity", 0)
+				})
+                .attr('cx',function(d){return x(random())})
+                .attr('cy',function(d){return y(random())})
+                .attr('fill','gray')
+                .attr('r', '1')
+		.style('opacity',0.3)
+		.transition()
+		.duration(3000)
+		//.delay(10)
+                .attr('cx',function(d){return x(d.petalLength)})
+                .attr('cy',function(d){return y(d.petalWidth)})
+                .attr('r', '8')
+		.style('opacity',1)
+                .attr('fill',function(d){return colores[d.class]})
+	svg
+		.append('g')
+		.attr('transform','translate(0,'+svgalto+')')
+		.call(d3.axisBottom(x))
+	svg
+		.append('g')
+		.call(d3.axisLeft(y))
+	console.log('graph petal ready')
+}
+
+function titleTable(data) {
+	var tablaDiv=d3.select('#tabla')
+	tablaDiv.append('h4').text('Tabla de datos')
+	tablaDiv.append('p').text('Al hacer click se cargan los datos en una tabla (esperar un poco)')
+	tablaDiv.append('button')
+		.attr('class','btn btn-outline-primary')	
+		.attr('id','btnTableAll')
+		.text('Cargar datos')
+	d3.select('#btnTableAll')
+		.on('click', function(){
+			//tablaDiv.append('p').text('Cargando...')
+			d3.select(this).text('Cargando...').attr('class','btn btn-outline-danger').attr('disabled','true');
+			tableLoad(data)
+			d3.select(this).text('Datos cargados').attr('class','btn btn-outline-success')
+		})
+}
+
+function tableLoad(data) {
+	//$(document).ready(function(){
+	console.log("table loading...")
+	var tabla=d3.select("#tabla").append("table").attr("id","tdatos")
+	var thead=tabla.append("thead").append("tr")
+	thead.selectAll("th").data(["sepal length","sepal width","petal length", "petal width", "class"]).enter().append("th").text(function(d){ return d })
+	var tbody=tabla.append("tbody")
+	trows=tbody.selectAll("tr").data(data).enter().append("tr")
+	tcells=trows.selectAll("td").data(function(d) {return Object.values(d)}).enter().append("td").text(function(d){ return d })
+	//datatables magic
+	$('#tdatos').DataTable()
+	//d3.select(this).text('Cargar datos')
+	console.log("table loaded")
+	//})
+	//d3.select(this).remove()
+
+}
+loadIris()
+
+
+</script>
+
+        
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+
+	<script src="//cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+	<br />
+
+    <p style="text-align:center;width:100%">
+    <small>Alfredo José Hernández Alvarez - ahernand@gmail.com - Tarea 3 - Herramientas de Visualización - Maestría en Análisis y Visualización de Datos Masivos UNIR</sm
+all>
+    </p>
+
+</body>
+</html>

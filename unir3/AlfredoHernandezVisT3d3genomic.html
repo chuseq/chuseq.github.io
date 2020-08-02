@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+	<link rel="stylesheet" href="//cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <script src="js/d3.min.js"></script>
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar-navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid-nav text-center">
+            <img src="img/logo-v.png" alt="" class="logo">
+        </div>
+    </div>
+    <!-- /navbar -->
+    
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Herramientas de Visualización</h1>
+		<small><a href="index.html">Índice</a></small>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- bio -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <img src="img/img_400x400.jpg" alt="" class="avatar rounded-circle">
+                    <br>
+                    <h3>Alfredo Hernández</h3>
+    
+                    <p>Linux Sysadmin, Programmer, and interested in big biodata </p>
+    
+                </div>
+    
+            </div>
+            <!-- proyectos -->
+            <div class="col-md-9">
+                <H3>Tarea 3: Gráficos con D3 (II)</H3>
+                <p>
+		En esta tarea se usaron dos conjuntos de datos:
+		<ol>
+			<li>El clásico <a href="AlfredoHernandezVisT3d3.html">conjunto de datos IRIS</a> de las propiedades de tres tipos de plantas</li>
+			<li>El conjunto de datos con el que estoy trabajando en el TFM: <a href="#genomic">representaciones vectoriales de subsecuencias genómicas</a> de genomas mitocondriales</li>
+		</ol>
+		</p>
+
+		<H3><a name="genomic">Firmas genómicas</a></H3>
+                <div id="graficas" class="graficas mb-4 shadow">
+
+                </div>
+                <div id="tabla">
+
+                </div>
+
+		<br />
+		<hr>
+		<br />
+
+
+            </div>
+        </div>
+    </div>
+    
+<script>
+seed=42
+//pseudo random // taken from class
+function random() {
+        x=Math.abs(Math.sin(seed++))*10
+        return x//-Math.floor(x)
+}
+
+// d3 content here
+colores={'gc':'#ff0000',
+        'cpg':'#0000ff',
+        'tp':'#0000ff',
+	'dws':'#CC6666', 
+	'dyr':'#9999CC', 
+	'dmk':'#66CC99',
+	'ltp':'#CC6666', 
+	'htp':'#9999CC', 
+	'itp':'#66CC99'
+	}
+tipos=[{'val':'gc','nom':'GC content'}, 
+	{'val':'cpg','nom':'CpG ratio'}, 
+	{'val':'dws','nom':'WS (Weak-Strong) IDH'},
+	{'val':'dyr','nom':'YR (pYrimidine-puRine) IDH'},
+	{'val':'dmk','nom':'MK (aMino-Ketone) IDH'}, 
+	{'val':'ltp','nom':'Low Twist Profile'},
+	{'val':'htp','nom':'High Twist Profile'},
+	{'val':'itp','nom':'Intermediate Twist Profile'}]
+var margin={top:20, right:20, bottom:30, left:40}
+ancho=+d3.select('#graficas').style('width').slice(0,-2)
+alto=ancho*9/16
+datos=[]
+// load
+function load() {
+	// gc, cpg, dws,dyr,dmk, ltp,htp,itp, id
+	d3.csv('/unir3/csv/genomic.csv').then(function(data) {
+		data.forEach(function(d) {
+			d.gc =+Number(d.gc).toFixed(2)
+			d.cpg=+Number(d.cpg).toFixed(2)
+			d.dws=+Number(d.dws).toFixed(2)
+			d.dyr=+Number(d.dyr).toFixed(2)
+			d.dmk=+Number(d.dmk).toFixed(2)
+			d.ltp=+Number(d.ltp).toFixed(2)
+			d.htp=+Number(d.htp).toFixed(2)
+			d.itp=+Number(d.itp).toFixed(2)
+		})
+		datos=data
+		graph(data)
+		titleTable(data)
+	})
+}
+function graph(data) {
+	var titlealto=120
+	var altoactual=+d3.select('#graficas').style('height').slice(0,-2)
+	d3.select('#graficas').style('height',altoactual+titlealto+alto+'px')
+        var graficas=d3.select('#graficas')
+	graficas.append('p').text('Selecciona el tipo de firma que quieres graficar')
+	graficas.append('select')
+		.attr('class','custom-select')
+		.on('change',function(){graphBy(this.value)})
+	var options=d3.select('select')
+		.selectAll('option')
+		.data(tipos)
+	options.enter()
+		.append('option')
+		.text(function(d){return d.nom})
+		.attr('value',function(d){return d.val})
+	graficas.append('br')
+	graficas.append('br')
+	graphBy('gc')
+}
+function graphBy(tipo) {
+	console.log('Tipo='+tipo)
+	tipotitle=tipos.filter(function(d){return d.val==tipo})[0].nom
+	d3.select('#graficaGenomic').remove()
+        d3.select('#graficas')
+		.append('div')
+		.attr('class','grafica rounded-lg')
+		.attr('id','graficaGenomic').style('height',alto+'px')
+        d3.select('#graficaGenomic').append('h4').text(tipotitle)
+	d3.select('#graficaGenomic').append('p').text('Al colocar el mouse sobre un punto se muestran los datos')
+	var svgancho=ancho-margin.left-margin.right-40
+	var svgalto=svgancho*9/16-margin.top-margin.bottom-40
+
+        countBy = datos.reduce(function(g,d) {
+		if(g[d[tipo]]==undefined) { g[d[tipo]]=1 }
+                else { g[d[tipo]]++ }
+                return g
+        }, {})
+        datosBy=[]
+        Object.keys(countBy)
+		.sort(function(a, b){return a-b})
+                .forEach(function(e){t={};t[tipo]=+e;t['num']=countBy[e];datosBy.push(t)})
+
+	var x=d3.scaleLinear()
+		.range([0,svgancho])
+        	.domain([
+			d3.min(datosBy,function(d){return d[tipo]}),
+			d3.max(datosBy,function(d){return d[tipo]})
+        	])
+	var y=d3.scaleLinear()
+		.range([0,svgalto])
+        	.domain([
+                	d3.max(datosBy,function(d){return d.num}),
+                	d3.min(datosBy,function(d){return d.num})
+        	])
+	var tooltip=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
+	// graph
+	var lines=d3.line()
+		.x(function(d){return d[tipo]})
+		.y(function(d){return d.num})
+	svg=d3.select('#graficaGenomic')
+	        .append('svg')
+	        .attr('width',ancho)
+	        .attr('height',alto)
+		.append('g')
+		.attr('transform','translate('+margin.left+','+margin.top+')')
+	// eje x
+        svg.append('g')
+                .attr('transform','translate(0,'+svgalto+')')
+                .call(d3.axisBottom(x))
+	svg.append('text')
+		.attr('transform','translate('+svgancho/2+','+(svgalto+30)+')')
+		.text(tipo)
+	// eje y
+        svg.append('g')
+                .call(d3.axisLeft(y))
+	svg.append('text')
+		.attr('transform','translate(-38,'+(svgalto/2)+')')
+		.text('#')
+	// puntos
+        circles=svg.selectAll('circle').data(datosBy)
+        circles.enter()
+                .append('circle')
+                .on("mouseover", function(d) {
+                                d3.select(this).style('background-color','blue').style("opacity", .5)
+                                tooltip.transition().duration(200).style("opacity", .8)
+				tooltip.html(tipo+'<br />'+d[tipo]+','+d.num).style('left', (d3.event.pageX)+'px').style('top', (d3.event.pageY)+'px')
+                                })
+                .on("mouseout", function(d) {
+                                d3.select(this).style('background-color',colores['gc']).style("opacity", 1)
+                                tooltip.transition().duration(500).style("opacity", 0)
+                                })
+		.attr('r',5)
+		.attr('cx',function(d){return x(d[tipo])})
+		.attr('cy',function(d){return y(d.num)})
+		.attr('fill',function(d){return colores[tipo]})
+	// lineas
+	var lines=d3.line()
+		.x(function(d){return x(d[tipo])})
+		.y(function(d){return y(d.num)})
+	var path=svg.append('path')
+		.datum(datosBy)
+		.attr('fill','none')
+		.attr('stroke',colores[tipo])
+		.attr('stroke-width',2.5)
+		.attr('d', lines)
+	var lineLength=path.node().getTotalLength()
+	path.attr('stroke-dasharray',lineLength+' '+lineLength)
+		.attr('stroke-dashoffset',lineLength)
+		.transition()
+		.duration(2000)
+		.attr('stroke-dashoffset',0)
+	console.log('graph genomic ready')
+}
+
+function titleTable(data) {
+	var tablaDiv=d3.select('#tabla')
+	tablaDiv.append('h4').text('Tabla de datos')
+	tablaDiv.append('p').text('Al hacer click se cargan los datos en una tabla (esperar un poco)')
+	tablaDiv.append('button')
+		.attr('class','btn btn-outline-primary')	
+		.attr('id','btnTableAll')
+		.text('Cargar datos')
+	d3.select('#btnTableAll')
+		.on('click', function(){
+			//tablaDiv.append('p').text('Cargando...')
+			d3.select(this).text('Cargando...').attr('class','btn btn-outline-danger').attr('disabled','true');
+			tableLoad(data)
+			d3.select(this).text('Datos cargados').attr('class','btn btn-outline-success')
+		})
+}
+
+function tableLoad(data) {
+	//$(document).ready(function(){
+	// gc, cpg, dws,dyr,dmk, ltp,htp,itp, id
+	console.log("table loading...")
+	var tabla=d3.select("#tabla").append("table").attr("id","tdatos")
+	var thead=tabla.append("thead").append("tr")
+	thead.selectAll("th").data(["gc","cpg","dws", "dyr", "dmk", "ltp","htp","itp","id"]).enter().append("th").text(function(d){ return d })
+	var tbody=tabla.append("tbody")
+	trows=tbody.selectAll("tr").data(data).enter().append("tr")
+	tcells=trows.selectAll("td").data(function(d) {return Object.values(d)}).enter().append("td").text(function(d){ return d })
+	//datatables magic
+	$('#tdatos').DataTable()
+	//d3.select(this).text('Cargar datos')
+	console.log("table loaded")
+	//})
+	//d3.select(this).remove()
+
+}
+load()
+
+
+</script>
+
+        
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+
+	<script src="//cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+	<br />
+
+    <p style="text-align:center;width:100%">
+    <small>Alfredo José Hernández Alvarez - ahernand@gmail.com - Tarea 3 - Herramientas de Visualización - Maestría en Análisis y Visualización de Datos Masivos UNIR</sm
+all>
+    </p>
+
+</body>
+</html>
