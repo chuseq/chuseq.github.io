@@ -126,6 +126,8 @@ function graphSepal(data) {
 	d3.select('#graficaSepal').append('p').text('Al colocar el mouse sobre un punto se muestran los datos')
 	var svgancho=ancho-margin.left-margin.right-40
 	var svgalto=svgancho*9/16-margin.top-margin.bottom-40
+	var rad=8
+	if(svgancho<480) {rad=3}
 	console.log('Ancho='+ancho+' Alto='+alto)
 	console.log('SvgAncho='+svgancho+' SvgAlto='+svgalto)
 	var x=d3.scaleLinear()
@@ -165,7 +167,7 @@ function graphSepal(data) {
                 .attr('cx',function(d){return x(random())})
                 .attr('cy',function(d){return y(random())})
                 .attr('fill','gray')
-                .attr('r', '1')
+                .attr('r', 1)
 		.style('opacity',0.3)
 		.transition()
 		.ease(d3.easeBack)
@@ -173,7 +175,7 @@ function graphSepal(data) {
 		//.delay(10)
                 .attr('cx',function(d){return x(d.sepalLength)})
                 .attr('cy',function(d){return y(d.sepalWidth)})
-                .attr('r', '8')
+                .attr('r', rad)
 		.style('opacity',1)
                 .attr('fill',function(d){return colores[d.class]})
 	svg
@@ -214,6 +216,8 @@ function graphPetal(data) {
 	d3.select('#graficaPetal').append('p').text('Al colocar el mouse sobre un punto se muestran los datos')
 	var svgancho=ancho-margin.left-margin.right-40
 	var svgalto=svgancho*9/16-margin.top-margin.bottom-40
+	var rad=8
+	if(svgancho<480) {rad=3}
 	console.log('Ancho='+ancho+' Alto='+alto)
 	console.log('SvgAncho='+svgancho+' SvgAlto='+svgalto)
 	var x=d3.scaleLinear()
@@ -251,7 +255,7 @@ function graphPetal(data) {
                 .attr('cx',function(d){return x(random())})
                 .attr('cy',function(d){return y(random())})
                 .attr('fill','gray')
-                .attr('r', '1')
+                .attr('r', 1)
 		.style('opacity',0.3)
 		.transition()
 		.ease(d3.easeElastic)
@@ -259,7 +263,7 @@ function graphPetal(data) {
 		//.delay(10)
                 .attr('cx',function(d){return x(d.petalLength)})
                 .attr('cy',function(d){return y(d.petalWidth)})
-                .attr('r', '8')
+                .attr('r', rad)
 		.style('opacity',1)
                 .attr('fill',function(d){return colores[d.class]})
 	svg
