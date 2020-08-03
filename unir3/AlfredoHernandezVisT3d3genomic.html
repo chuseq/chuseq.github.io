@@ -177,9 +177,6 @@ function graphBy(tipo) {
         	])
 	var tooltip=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
 	// graph
-	var lines=d3.line()
-		.x(function(d){return d[tipo]})
-		.y(function(d){return d.num})
 	svg=d3.select('#graficaGenomic')
 	        .append('svg')
 	        .attr('width',ancho)
