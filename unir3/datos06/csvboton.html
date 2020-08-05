@@ -85,6 +85,13 @@ function load() {
 	//d3.csv('http://132.248.220.117/owncloud/index.php/s/kgxanZQNErH3CCj')
 	d3.csv('/unir3/csv/edificios.csv')
 	.then(function(data) { //console.log(data.edificio)
+		data.forEach(function(d) {
+                        d.ano=+d.ano
+                        d.oficial=+d.oficial
+                        d.antena=+d.antena
+                        d.ultimopiso=+d.ultimopiso
+                        d.piso=+d.piso
+		})
 		datos=data
 		render(data)
 	})
