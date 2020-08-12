@@ -82,7 +82,7 @@ function render(data,year=1800) {
 		.attr('cy', (d)=>y(d.life_exp))
 		.attr('r',  (d)=>r(d.population))
 		.attr('fill',(d)=>continentColor(d.continent))
-		.attr('fill-opacity', 0.75)
+		.attr('fill-opacity', 0.6)
 		.attr('stroke','gray')
 	puntos
 		.exit()
@@ -122,7 +122,7 @@ function load() {
 			.range([alto,0])
 		r
 			.domain([d3.min(data, (d)=>d.population), d3.max(data, (d)=>d.population)])
-			.range([5,50])
+			.range([6,60])
 		
 		years = d3
 			.map(data, (d)=>+d.year)
