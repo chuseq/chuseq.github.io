@@ -83,7 +83,11 @@ var svgancho=ancho-margin.left-margin.right-40
 var svgalto=svgancho*9/16-margin.top-margin.bottom-40
 var rad=5
 var lineWidth=2.5
-if(svgancho<480) { rad=1.5; lineWidth=1 }
+var stren=-100
+var dis=50
+var radmin=8
+var radmult=1.5
+if(svgancho<480) { rad=1.5; lineWidth=1; svgalto=svgancho; alto=ancho; stren=-50; dis=30; radmin=3; radmult=1}
 console.log('ancho='+ancho+' alto='+alto+'')
 console.log('svgancho='+svgancho+' svgalto='+svgalto+' rad='+rad)
 
@@ -114,7 +118,6 @@ graficas
 function graph(data) {
 	console.log(data)
 	// sliders
-	var stren=-100
 	var graficaGenomic= d3.select('#graficaGenomic')
 	var divControls=graficaGenomic
 		.append('div')
@@ -144,7 +147,6 @@ function graph(data) {
 		.attr('id','strengthval')
 		.text(stren)
 
-	var dis=50
 	var divDis=divControls
 		.append('div')
 		.attr('class','col-md-4')
@@ -198,7 +200,7 @@ function graph(data) {
 	var svg=d3.select('#graficaGenomic')
 	        .append('svg')
 	        .attr('width',ancho-40)
-	        .attr('height',alto)
+	        .attr('height',alto-40)
 		.append('g')
 		.attr('transform','translate('+margin.left+','+margin.top+')')
 	marker=svg.append('defs')
@@ -239,7 +241,7 @@ function graph(data) {
 			    }).length; 
 			    if (isNaN(d.weight)) { d.weight=0 }
 			    //console.log('d=',d)
-			    return 8 + (1.3*+d.weight)
+			    return radmin + (radmult*+d.weight)
 			})
 		.attr('fill',function(d){return colorScale(d.weight)})
 		.attr('fill-opacity',0.8)
