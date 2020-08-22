@@ -1,0 +1,28 @@
+{
+  "nodes": [ 
+	{ "id": 0, "name": "RHE_RS03695" }, 
+	{ "id": 1, "name": "RHE_RS01875" },
+	{ "id": 2, "name": "RHE_RS02340" },
+	{ "id": 3, "name": "RHE_RS15195" },
+	{ "id": 4, "name": "RHE_RS01970" },
+	{ "id": 5, "name": "RHE_RS19035" },
+	{ "id": 6, "name": "RHE_RS00415" },
+	{ "id": 7, "name": "RHE_RS02565" },
+	{ "id": 8, "name": "RHE_RS15655" },
+	{ "id": 9, "name": "RHE_RS02675" },
+	{ "id": 10, "name": "RHE_RS11220" }
+  ],
+  "links": [
+	{ "source": "RHE_RS02340", "target": "RHE_RS03695", "value": 10 },
+	{ "source": "RHE_RS01970", "target": "RHE_RS15195" },
+	{ "source": "RHE_RS11220", "target": "RHE_RS15195" },
+	{ "source": "RHE_RS01875", "target": "RHE_RS02675" },
+	{ "source": "RHE_RS01970", "target": "RHE_RS19035" },
+	{ "source": "RHE_RS02565", "target": "RHE_RS00415" },
+	{ "source": "RHE_RS02565", "target": "RHE_RS02675" },
+	{ "source": "RHE_RS02675", "target": "RHE_RS15655" },
+	{ "source": "RHE_RS02675", "target": "RHE_RS03695" },
+	{ "source": "RHE_RS02675", "target": "RHE_RS11220" },
+	{ "source": "RHE_RS03695", "target": "RHE_RS01970" }
+  ]
+}
