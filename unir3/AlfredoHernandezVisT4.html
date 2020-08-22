@@ -181,8 +181,9 @@ function graph(data) {
 		.attr('class','btn btn-outline-primary')
 		.text('Mostrar nombres')
 		.style('font-size','10px')
-	divBut
+	butNames=divBut
 		.select('#showNames')
+	butNames
 		.on('click', function(d){
 			muestra=!muestra
 			if(muestra) { //muestra
@@ -191,8 +192,14 @@ function graph(data) {
 					.text(function(d){return d.name})
 					.attr('x',8)
 					.style('font-size','10px')
+				butNames.classed('btn-danger',true)
+					.classed('btn-outline-primary',false)
+					.html('Ocultar nombres')
 			} else { // no muestra
 				nodos.selectAll('text').remove()
+				butNames.classed('btn-outline-primary',true)
+					.classed('btn-danger',false)
+					.html('Mostrar nombres')
 			}
 
 		})
