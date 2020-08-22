@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+	<link rel="stylesheet" href="//cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <script src="js/d3.min.js"></script>
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar-navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid-nav text-center">
+            <img src="img/logo-v.png" alt="" class="logo">
+        </div>
+    </div>
+    <!-- /navbar -->
+    
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Herramientas de Visualización</h1>
+		<small><a href="index.html">Índice</a></small>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- bio -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <img src="img/img_400x400.jpg" alt="" class="avatar rounded-circle">
+                    <br>
+                    <h3>Alfredo Hernández</h3>
+    
+                    <p>Linux Sysadmin, Programmer, and interested in big biodata </p>
+    
+                </div>
+    
+            </div>
+            <!-- proyectos -->
+            <div class="col-md-9">
+                <H3>Tarea 3: Gráficos con D3 (III)</H3>
+                <p>
+		En esta tarea se usó un conjunto de datos que representan genes y sus reguladores para generar una gráfica con nodos y líneas que representa una red de regulación genética.
+		</p>
+
+                <div id="graficas" class="graficas mb-4 shadow">
+
+                </div>
+                <div id="tabla">
+
+                </div>
+
+		<br />
+		<hr>
+		<br />
+
+
+            </div>
+        </div>
+    </div>
+    
+<script>
+seed=42
+//pseudo random // taken from class
+function random() {
+        x=Math.abs(Math.sin(seed++))*10
+        return x//-Math.floor(x)
+}
+
+// d3 content here
+var margin={top:20, right:20, bottom:20, left:20}
+ancho=+d3.select('#graficas').style('width').slice(0,-2)
+alto=ancho*9/16
+datos=[]
+
+
+var titlealto=120
+var altoactual=+d3.select('#graficas').style('height').slice(0,-2)
+var svgancho=ancho-margin.left-margin.right-40
+var svgalto=svgancho*9/16-margin.top-margin.bottom-40
+var rad=5
+var lineWidth=2.5
+if(svgancho<480) { rad=1.5; lineWidth=1 }
+console.log('ancho='+ancho+' alto='+alto+'')
+console.log('svgancho='+svgancho+' svgalto='+svgalto+' rad='+rad)
+
+var colorScale=d3.scaleLinear()
+	.domain([1,16]) // de acuerdo a d.weight
+	.range(['#0000cb','#cb0000']) // tono azul a tono rojo
+
+var muestra=false
+var tooltip=d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0)
+
+var graficas=d3.select('#graficas')
+graficas
+	.style('height',altoactual+titlealto+alto+'px')
+	.append('h3')
+	.append('g')
+	.append('span').text('Red de regulación genética de ')
+	.append('span').text('Rhizobium etli CFN 42').style('font-style','italic')
+
+graficas
+	.append('div')
+	.attr('class','grafica rounded-lg')
+	.attr('id','graficaGenomic').style('height',alto+'px')
+
+
+
+
+
+function graph(data) {
+	console.log(data)
+	// sliders
+	var stren=-100
+	var graficaGenomic= d3.select('#graficaGenomic')
+	var divControls=graficaGenomic
+		.append('div')
+		.attr('class','row')
+
+	var divStren=divControls
+		.append('div')
+		.attr('class','col-md-4')
+		.attr('id','divStrength')
+	divStren
+		.text('Resistencia: ')
+	divStren
+		.append('input')
+		.attr('type','range')
+		.attr('min',-180)
+		.attr('max',20)
+		.attr('value',stren)
+		.attr('step',5)
+		.on('input', function(d){
+			//console.log(this.value)
+			d3.select('#strengthval').text(this.value)
+			simulation.force('charge').strength(this.value)
+    			if (!d3.event.active) simulation.alpha(1).restart();
+		})
+	divStren
+		.append('span')
+		.attr('id','strengthval')
+		.text(stren)
+
+	var dis=50
+	var divDis=divControls
+		.append('div')
+		.attr('class','col-md-4')
+		.attr('id','divDis')
+	divDis
+		.text('Distancia: ')
+	divDis
+		.append('input')
+		.attr('type','range')
+		.attr('min',5)
+		.attr('max',120)
+		.attr('value',dis)
+		.attr('step',5)
+		.on('input', function(d){
+			//console.log(this.value)
+			d3.select('#disval').text(this.value)
+			simulation.force('link').distance(this.value)
+    			if (!d3.event.active) simulation.alpha(1).restart();
+		})
+	divDis
+		.append('span')
+		.attr('id','disval')
+		.text(dis)
+	var divBut=divControls
+		.append('div')
+		.attr('class','col-md-4')
+		.attr('id','divBut')
+	divBut
+		.append('button')
+		.attr('id','showNames')
+		.attr('class','btn btn-outline-primary')
+		.text('Mostrar nombres')
+		.style('font-size','10px')
+	divBut
+		.select('#showNames')
+		.on('click', function(d){
+			muestra=!muestra
+			if(muestra) { //muestra
+				nombres=nodos
+					.append('text')
+					.text(function(d){return d.name})
+					.attr('x',8)
+					.style('font-size','10px')
+			} else { // no muestra
+				nodos.selectAll('text').remove()
+			}
+
+		})
+
+	// graph
+	var svg=d3.select('#graficaGenomic')
+	        .append('svg')
+	        .attr('width',ancho-40)
+	        .attr('height',alto)
+		.append('g')
+		.attr('transform','translate('+margin.left+','+margin.top+')')
+	marker=svg.append('defs')
+		.append('marker')
+		.attr('id','arrow')
+		.attr('viewBox','0 -5 10 10')
+		.attr('refX',15)
+		.attr('refY',0)
+		.attr('markerWidth',5)
+		.attr('markerHeight',10)
+		.attr('orient','auto')
+		.attr('xoverflow','visible')
+		// path para dibujar la flecha, ie un triangulo
+		// M=move to, L=linea
+		.append('path').attr('d','M 0,-3 L 10,0 L 0,3').attr('fill','#999999')
+	// links
+	ligas = svg.append('g')
+		.selectAll('line')
+		.data(data.links)
+        	.enter()
+                .append('line')
+		.attr('stroke','#999999')
+		.attr('stroke-width',2)
+		.attr('stroke-opacity',0.6)
+		.attr('marker-end', 'url(#arrow)')
+
+	// nodes
+        nodos = svg.append('g')
+		.selectAll('g')
+		.data(data.nodes)
+        	.enter()
+		.append('g')
+	circulos= nodos
+                .append('circle')
+		.attr('r',function(d) {      
+			    d.weight = data.links.filter(function(l) {
+			        return l.source == d.name || l.target == d.name
+			    }).length; 
+			    if (isNaN(d.weight)) { d.weight=0 }
+			    //console.log('d=',d)
+			    return 8 + (1.3*+d.weight)
+			})
+		.attr('fill',function(d){return colorScale(d.weight)})
+		.attr('fill-opacity',0.8)
+                .on('mouseover', function(d) {
+                                d3.select(this).style('background-color','blue').style("opacity", .5)
+                                tooltip.transition().duration(200).style("opacity", .8)
+			tooltip.html(d.name+'<br>'+d.weight).style('left', (d3.event.pageX)+'px').style('top', (d3.event.pageY)+'px').style('font-size','11px')
+                                })
+                .on('mouseout', function(d) {
+                                d3.select(this).style('background-color','blue').style("opacity", 1)
+                                tooltip.transition().duration(500).style("opacity", 0)
+                                })
+		.call(d3.drag()
+			.on('start', dragstart)
+			.on('drag',dragged)
+			.on('end', dragend))
+		
+
+
+	simulation=d3.forceSimulation(data.nodes)
+		.force('link', d3.forceLink(data.links).id(function(d){return d.name}))
+		.force('charge', d3.forceManyBody())
+		.force('collide', d3.forceCollide())
+		.force('center', d3.forceCenter(svgancho/2, svgalto/2))
+	simulation
+		.on('tick', drawNetwork)
+	simulation
+		.force('charge').strength(stren)
+	simulation
+		.force('link').distance(dis)
+	simulation
+		.force('collide').radius(10)
+	console.log('graph genomic ready')
+}
+
+
+function drawNetwork() {
+    ligas
+        .attr('x1', function(d) { return d.source.x; })
+        .attr('y1', function(d) { return d.source.y; })
+        .attr('x2', function(d) { return d.target.x; })
+        .attr('y2', function(d) { return d.target.y; });
+
+//    circulos
+//         .attr('cx', function(d) { return d.x; })
+//         .attr('cy', function(d) { return d.y; });
+    nodos
+	.attr('transform', function(d) { return 'translate('+d.x+','+d.y+')' })
+}
+function dragstart(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+}
+
+function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+}
+
+function dragend(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+}
+
+function showData(data) {
+        var tablaDiv=d3.select('#tabla')
+        tablaDiv.append('h3').text('Datos')
+        tablaDiv.append('button')
+                .attr('class','btn btn-outline-primary')        
+                .attr('id','btnTable')
+                .text('Mostrar datos')
+        d3.select('#btnTable')
+                .on('click', function(){
+			d3.select("#tabla").select("p").remove()
+		        d3.select("#tabla").append("p").text(JSON.stringify(data))
+		        console.log("data loaded")
+                })
+}
+
+// load
+function load() {
+	d3.json('/unir3/graph2.json').then(function(data) {
+		datos=data
+		graph(data)
+		d3.selectAll('#graficas').append('p').text('Fuente: http://rhizobindingsites.ccg.unam.mx, Rhizobium etli CFN 42, Motif information, Prediction of regulons, Demo').style('font-size', '10px')
+		showData(data)
+	})
+}
+
+load()
+
+</script>
+
+        
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+
+	<script src="//cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+	<br />
+
+    <p style="text-align:center;width:100%">
+    <small>Alfredo José Hernández Alvarez - ahernand@gmail.com - Tarea 4 - Herramientas de Visualización - Maestría en Análisis y Visualización de Datos Masivos UNIR</sm
+all>
+    </p>
+
+</body>
+</html>
