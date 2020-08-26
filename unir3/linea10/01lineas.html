@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+	<link rel="stylesheet" href="../css/styles.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="../js/d3.min.js"></script>
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar-navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid-nav text-center">
+            <img src="../img/logo-v.png" alt="" class="logo">
+        </div>
+    </div>
+    <!-- /navbar -->
+    
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Herramientas de Visualización</h1>
+		<small><a href="../index.html">Índice</a></small>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- bio -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <img src="../img/img_400x400.jpg" alt="" class="avatar rounded-circle">
+                    <br>
+                    <h3>Alfredo Hernández</h3>
+    
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita ex vitae modi impedit consequuntur. Porro, quis? Maxime, libero laborum delectus repellat eaque tempora hic dolore, corrupti quo, quidem fugit eius!</p>
+    
+                </div>
+    
+            </div>
+            <!-- proyectos -->
+            <div class="col-md-9">
+                <div id="grafica" class="grafica mb-4 shadow">
+
+                </div>
+                <H3>GapMinder</H3>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis eum maxime fugiat quidem, ratione nostrum excepturi iste sequi temporibus quasi quis ipsam error autem animi sunt rem culpa blanditiis similique!</p>                    
+    
+            </div>
+        </div>
+    </div>
+    
+<script>
+// d3 content here
+
+ancho_total=+d3.select('#grafica').style('width').slice(0,-2)
+alto_total= +d3.select('#grafica').style('height').slice(0,-2)
+margin = {top:60, right:20, bottom:80, left:40}
+ancho=ancho_total-margin.left-margin.right
+alto=alto_total-margin.top-margin.bottom
+
+svg=d3.select('#grafica')
+        .append('svg')
+        .attr('width',ancho_total)
+        .attr('height',alto_total)
+
+g = svg.append('g')
+        .attr('width', ancho_total-margin.left-margin.right)
+        .attr('height', alto_total-margin.top-margin.bottom)
+        .attr('transform','translate('+margin.left+','+margin.top+')')
+
+parseTime=d3.timeParse('%Y')
+
+x = d3.scaleTime()
+	.range([0,ancho])
+
+y = d3.scaleLinear()
+	.range([alto,0])
+
+function render(data) {
+
+	g.append('path')
+		.attr('fill','none')
+		.attr('stroke','#f00')
+		.attr('stroke-width',3)
+		.attr('d',linea(data))
+}
+
+function load() {
+	d3.csv('../csv/lineas.csv').then(data=>{
+		data.forEach(d=>{
+			d.year=+d.year
+			d.value=+d.value
+		})
+	//x.domain([d3.min(data,d=>d.year), d3.max(data,d=>d.year)]) es similar que la siguiente:
+	x.domain(d3.extent(data, d=>d.year))
+	y.domain([d3.min(data,d=>d.value)/1.05, d3.max(data,d=>d.value)*1.05])
+	xAxisCall=d3.axisBottom()
+	xAxis=g
+		.append('g')
+		.attr('transform','translate(0,'+alto+')')
+		.call(xAxisCall.scale(x))
+	yAxisCall=d3.axisLeft()
+	yAxis=g
+		.append('g')
+		.call(yAxisCall.scale(y))
+
+	linea = d3
+		.line()
+		.x(d=>x(d.year))
+		.y(d=>y(d.value))
+
+	render(data)
+	})
+}
+
+
+load()
+
+</script>
+
+        
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+
+</body>
+</html>
