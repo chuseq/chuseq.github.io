@@ -92,6 +92,7 @@ function load() {
 			d.year=+d.year
 			d.value=+d.value
 		})
+		console.log(data)
 	//x.domain([d3.min(data,d=>d.year), d3.max(data,d=>d.year)]) es similar que la siguiente:
 	x.domain(d3.extent(data, d=>d.year))
 	y.domain([d3.min(data,d=>d.value)/1.05, d3.max(data,d=>d.value)*1.05])
